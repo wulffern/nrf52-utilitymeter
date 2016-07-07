@@ -1,0 +1,47 @@
+#!/usr/bin/perl
+######################################################################
+##        Copyright (c) 2016 Carsten Wulff Software, Norway 
+## ###################################################################
+## Created       : wulff at 2016-7-7
+## ###################################################################
+##   This program is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version.
+## 
+##   This program is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+## 
+##   You should have received a copy of the GNU General Public License
+##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+######################################################################
+
+use strict;
+use File::Temp qw/ tempfile tempdir /;
+
+my ($fh, $filename) = tempfile();
+
+my $addr = shift;
+my $count = shift;
+my $bytes = $count*2;
+
+my @buffer = `nrfjprog -f nRF52 --memrd $addr --w 16 --n $bytes;`;
+system("nrfjprog -f nRF52 --run");
+my @data;
+
+foreach(@buffer){
+  my @line = split(/\s+/);
+  shift(@line);
+  foreach my $i (0..7){
+	my $hex = $line[$i];
+	my $dec = hex($hex);
+	$dec -= 65536 if $dec >= 16384;
+	print $fh $dec."\n";
+  }
+}
+
+
+system("octave --eval \"data = load('$filename'); addpath('matlab'); oct_dofft(data',4096,1,1,1,1,'');\" --persist");
+
