@@ -28,17 +28,6 @@
 
 #include "ex1_scan_multiple_channels.h"
 
-#define EX1_COUNT 5
-
-float ex1_result_f[EX1_COUNT];
-int16_t ex1_result[EX1_COUNT];
-
-// factor = RESOLUTION/(VREF x GAIN)/2^MODE[DIFF,SE]
-static const float factor[EX1_COUNT] = { 16384.0/3.0 ,
-								 16384.0/2.4/2 ,
-								 16384.0/3.0/2 ,
-								 16384.0/3.0/2 ,
-								 16384.0/3.0/2};
 
 void ex1_saadc_init(){
 
@@ -129,7 +118,7 @@ float * ex1_postprocess(uint16_t * count){
 	
 	*count = EX1_COUNT;
 	for(int i=0;i<*count;i++){
-		ex1_result_f[i] = ex1_result[i]/factor[i];
+		ex1_result_f[i] = ex1_result[i]/ex1_factor[i];
 	}
 
 	return &ex1_result_f[0];

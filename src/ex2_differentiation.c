@@ -61,14 +61,13 @@ Running:
 
 #include "ex2_differentiation.h"
 
-#define EX2_COUNT 1
-#define DMA_COUNT 8192
-
 float ex2_result_f[EX2_COUNT];
-int16_t ex2_result[DMA_COUNT] __attribute__((section (".myBufSection")));
+int16_t ex2_result[EX2_DMA_COUNT] __attribute__((section (".myBufSection")));
 
 // factor = RESOLUTION/(VREF x GAIN)/2^MODE[DIFF,SE]
-static const float factor[EX2_COUNT] = { 16384.0/2.4/2};
+static const float ex2_factor[EX2_COUNT] = { 16384.0/2.4/2};
+
+
 
 void ex2_saadc_init(){
 
@@ -103,7 +102,7 @@ void ex2_saadc_init(){
     NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over2x << SAADC_OVERSAMPLE_OVERSAMPLE_Pos;
 
 	//Setup memory location
-    NRF_SAADC->RESULT.MAXCNT = DMA_COUNT;
+    NRF_SAADC->RESULT.MAXCNT = EX2_DMA_COUNT;
     NRF_SAADC->RESULT.PTR = (uint32_t)&ex2_result[0];
 
     //Use internal timer
@@ -119,7 +118,7 @@ void ex2_saadc_init(){
 float * ex2_postprocess(uint16_t * count){
     *count = EX2_COUNT;
     for(int i=0;i<*count;i++){
-        ex2_result_f[i] = ex2_result[i]/factor[i];
+        ex2_result_f[i] = ex2_result[i]/ex2_factor[i];
     }
 
     return &ex2_result_f[0];

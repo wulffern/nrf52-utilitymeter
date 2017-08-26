@@ -25,10 +25,20 @@
 // 
 //====================================================================
 
+#ifndef EX2_DIFFERENTIATION_H
+#define EX2_DIFFERENTIATION_H
+
 #include <stdint.h>
 #include <string.h>
 #include "nordic_common.h"
 #include "nrf.h"
 
+#define EX2_COUNT 1
+#define EX2_DMA_COUNT 8192
+
+
+
 void ex2_saadc_init();
 float * ex2_postprocess(uint16_t * count);
+
+#endif

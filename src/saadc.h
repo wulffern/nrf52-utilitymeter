@@ -26,9 +26,16 @@
 //====================================================================
 
 
+#ifndef EX_SAADC_H
+#define EX_SAADC_H
+
 #include "ex1_scan_multiple_channels.h"
 #include "ex2_differentiation.h"
+#include "ex3_double_buffer_uart.h"
+//#include "ex4_fftcapture.h"
 
 void saadc_deinit();
 void saadc_calibrate();
 void saadc_sample();
+
+#endif

@@ -65,9 +65,10 @@ $(abspath ${SDKPATH}components/drivers_nrf/uart/nrf_drv_uart.c) \
 $(abspath ${SDKPATH}components/drivers_nrf/pstorage/pstorage.c) \
 $(abspath ${SDKPATH}examples/bsp/bsp.c) \
 $(abspath ${SDKPATH}examples/bsp/bsp_btn_ble.c) \
-$(abspath src/saadc.c) \
 $(abspath src/ex1_scan_multiple_channels.c) \
 $(abspath src/ex2_differentiation.c) \
+$(abspath src/ex3_double_buffer_uart.c) \
+$(abspath src/saadc.c) \
 $(abspath src/main.c) \
 $(abspath ${SDKPATH}components/ble/common/ble_advdata.c) \
 $(abspath ${SDKPATH}components/ble/ble_advertising/ble_advertising.c) \

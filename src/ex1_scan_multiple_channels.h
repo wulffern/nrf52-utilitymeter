@@ -26,11 +26,28 @@
 //====================================================================
 
 
+#ifndef EXAMPLE1_H
+#define EXAMPLE1_H
 
 #include <stdint.h>
 #include <string.h>
 #include "nordic_common.h"
 #include "nrf.h"
 
+#define EX1_COUNT 5
+
+float ex1_result_f[EX1_COUNT];
+int16_t ex1_result[EX1_COUNT];
+
+// factor = RESOLUTION/(VREF x GAIN)/2^MODE[DIFF,SE]
+static const float ex1_factor[EX1_COUNT] = { 16384.0/3.0 ,
+								 16384.0/2.4/2 ,
+								 16384.0/3.0/2 ,
+								 16384.0/3.0/2 ,
+								 16384.0/3.0/2};
+
+
 void ex1_saadc_init();
 float * ex1_postprocess(uint16_t * count);
+
+#endif
