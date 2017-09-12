@@ -3,10 +3,12 @@
 
 SDKPATH = ../nRF5_SDK_11/
 
-
+DEVICE = NRF52
+DEVICE_LC = $(shell echo $(DEVICE) | tr A-Z a-z)
+PROJECT_NAME := saadc
+xDK_TOP ?= ${SDKPATH}
 #------
 
-PROJECT_NAME := saadc_barebone
 
 export OUTPUT_FILENAME
 
@@ -44,49 +46,17 @@ SIZE            := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-size'
 remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-out $(firstword $1),$1))))
 
 #source common to all targets
-C_SOURCE_FILES += $(abspath ${SDKPATH}components/libraries/button/app_button.c) \
-$(abspath ${SDKPATH}components/libraries/util/app_error.c) \
-$(abspath ${SDKPATH}components/libraries/util/app_error_weak.c) \
-$(abspath ${SDKPATH}components/libraries/fifo/app_fifo.c) \
-$(abspath ${SDKPATH}components/libraries/timer/app_timer.c) \
-$(abspath ${SDKPATH}components/libraries/util/app_util_platform.c) \
-$(abspath ${SDKPATH}components/libraries/fstorage/fstorage.c) \
-$(abspath ${SDKPATH}components/libraries/util/nrf_assert.c) \
-$(abspath ${SDKPATH}components/libraries/util/nrf_log.c) \
-$(abspath ${SDKPATH}components/libraries/uart/retarget.c) \
-$(abspath ${SDKPATH}external/segger_rtt/RTT_Syscalls_GCC.c) \
-$(abspath ${SDKPATH}external/segger_rtt/SEGGER_RTT.c) \
-$(abspath ${SDKPATH}external/segger_rtt/SEGGER_RTT_printf.c) \
-$(abspath ${SDKPATH}components/libraries/uart/app_uart_fifo.c) \
-$(abspath ${SDKPATH}components/drivers_nrf/delay/nrf_delay.c) \
-$(abspath ${SDKPATH}components/drivers_nrf/common/nrf_drv_common.c) \
-$(abspath ${SDKPATH}components/drivers_nrf/gpiote/nrf_drv_gpiote.c) \
-$(abspath ${SDKPATH}components/drivers_nrf/uart/nrf_drv_uart.c) \
-$(abspath ${SDKPATH}components/drivers_nrf/pstorage/pstorage.c) \
-$(abspath ${SDKPATH}examples/bsp/bsp.c) \
-$(abspath ${SDKPATH}examples/bsp/bsp_btn_ble.c) \
-$(abspath src/ex1_scan_multiple_channels.c) \
-$(abspath src/ex2_differentiation.c) \
-$(abspath src/ex3_double_buffer_uart.c) \
-$(abspath src/saadc.c) \
-$(abspath src/main.c) \
-$(abspath ${SDKPATH}components/ble/common/ble_advdata.c) \
-$(abspath ${SDKPATH}components/ble/ble_advertising/ble_advertising.c) \
-$(abspath ${SDKPATH}components/ble/common/ble_conn_params.c) \
-$(abspath ${SDKPATH}components/ble/ble_services/ble_nus/ble_nus.c) \
-$(abspath ${SDKPATH}components/ble/common/ble_srv_common.c) \
-$(abspath ${SDKPATH}components/toolchain/system_nrf52.c) \
-$(abspath ${SDKPATH}components/softdevice/common/softdevice_handler/softdevice_handler.c) \
+C_SOURCE_FILES += $(abspath src/main.c) \
+$(abspath ${SDKPATH}components/toolchain/system_nrf52.c) 
+
+
 
 #assembly files common to all targets
 ASM_SOURCE_FILES  = $(abspath ${SDKPATH}components/toolchain/gcc/gcc_startup_nrf52.s)
 
 #includes common to all targets
 #INC_PATHS += -I$(abspath config) 
-INC_PATHS += -I$(abspath ${SDKPATH}examples/ble_peripheral/ble_app_uart/config/ble_app_uart_s132_pca10040)
-INC_PATHS += -I$(abspath ${SDKPATH}examples/ble_peripheral/ble_app_uart/config)
 INC_PATHS += -I$(abspath ${SDKPATH}components/drivers_nrf/config)
-
 INC_PATHS += -I$(abspath ${SDKPATH}components/libraries/timer)
 INC_PATHS += -I$(abspath ${SDKPATH}components/libraries/fifo)
 INC_PATHS += -I$(abspath ${SDKPATH}components/libraries/fstorage/config)
@@ -108,6 +78,7 @@ INC_PATHS += -I$(abspath ${SDKPATH}examples/bsp)
 INC_PATHS += -I$(abspath ${SDKPATH}components/ble/ble_services/ble_nus)
 INC_PATHS += -I$(abspath ${SDKPATH}components/toolchain/CMSIS/Include)
 INC_PATHS += -I$(abspath ${SDKPATH}components/drivers_nrf/hal)
+INC_PATHS += -I$(abspath ${SDKPATH}components/drivers_nrf/delay)
 INC_PATHS += -I$(abspath ${SDKPATH}components/toolchain/gcc)
 INC_PATHS += -I$(abspath ${SDKPATH}components/toolchain)
 INC_PATHS += -I$(abspath ${SDKPATH}components/drivers_nrf/common)
@@ -280,3 +251,7 @@ flash_softdevice:
 	@echo Flashing: s132_nrf52_2.0.0_softdevice.hex
 	nrfjprog --program ${SDKPATH}components/softdevice/s132/hex/s132_nrf52_2.0.0_softdevice.hex -f nrf52 --chiperase
 	nrfjprog --reset -f nrf52
+
+run:
+	nrfjprog -f nRF52 --ramwr 0x20004080 --val 0x1
+	nrfjprog -f nRF52 --run

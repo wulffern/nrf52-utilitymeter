@@ -155,7 +155,7 @@ if doplot > 0
 %    'Color',[1 1 1],'Name','FFT');
 
 %OCTAVE
-figure1 = figure(   'Color',[1 1 1]);
+figure1 = figure();  % 'Color',[1 1 1]);
 
 % Create axes
 axes1 = axes('Parent',figure1,'YGrid','on','XGrid','on');

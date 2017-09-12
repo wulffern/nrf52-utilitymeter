@@ -5,9 +5,11 @@ GROUP(-lgcc -lc -lnosys)
 
 MEMORY
 {
-  FLASH (rx)   : ORIGIN = 0x1c000, LENGTH = 0x64000
-  RAM (rwx)    : ORIGIN = 0x20006080, LENGTH = 0x9f80
-  m_data (rwx) : ORIGIN = 0x20002080, LENGTH = 0x4000	
+  FLASH (rx)   : ORIGIN = 0x0000, LENGTH = 0x80000
+  RAM (rwx)    : ORIGIN = 0x20004010, LENGTH = 0x9f80
+  m_data1 (rwx) : ORIGIN = 0x20000000, LENGTH = 0x2000		
+  m_data2 (rwx) : ORIGIN = 0x20002000, LENGTH = 0x2000
+
 }
 
 SECTIONS
@@ -23,10 +25,16 @@ SECTIONS
 SECTIONS
 {
   /* placing my named section at given address: */
-  .myBufBlock 0x20002080 :
+  .mydata1 0x20000000 :
   {
-    KEEP(*(.myBufSection)) /* keep my variable even if not referenced */
-  } > m_data
+    KEEP(*(.mydata1)) /* keep my variable even if not referenced */
+  } > m_data1
+  
+  .mydata2 0x20002000 :
+  {
+    KEEP(*(.mydata2)) /* keep my variable even if not referenced */
+  } > m_data2
+
  
   /* other placements follow here... */
 }

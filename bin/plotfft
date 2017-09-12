@@ -23,6 +23,8 @@ use File::Temp qw/ tempfile tempdir /;
 
 my ($fh, $filename) = tempfile();
 
+print $filename."\n";
+
 my $addr = shift;
 my $count = shift;
 my $bytes = $count*2;

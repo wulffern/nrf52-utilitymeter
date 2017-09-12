@@ -1,10 +1,13 @@
 
-=== Barebone examples
+=== Utility meter
 
 == About
-I'm Carsten Wulff, and I'm one of the engineers that worked on the
-SAADC on nRF52. These examples are some of my barebone tricks and tips
-on how SAADC can be used.
+Plan:
+1. Get low power sampling with SAADC working (/)
+2. Add light sensor, and see if I can detect the blinking from the
+   utility meter (x)
+3. Add nRFCloud functionallity (x)
+
 
 == To run
 Ideally it should be
@@ -15,9 +18,6 @@ Ideally it should be
 But rarely that will suffice, you probably have to at least change 
 SDKPATH in the Makefile
 
-== Origin
-I've based this example on the uart ble example in nRF5_SDK_11, so you
-need to download that.
 
 == Excuses
 I'm not a professional embedded programmer (i.e I don't get paid to 
