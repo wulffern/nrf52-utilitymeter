@@ -1,7 +1,7 @@
 
-=== Utility meter
+# Utility meter
 
-== About
+# About
 Plan:
 1. Get low power sampling with SAADC working (/)
 2. Add light sensor, and see if I can detect the blinking from the
@@ -9,7 +9,7 @@ Plan:
 3. Add nRFCloud functionallity (x)
 
 
-== To run
+# To run
 Ideally it should be
 
   make
@@ -19,7 +19,7 @@ But rarely that will suffice, you probably have to at least change
 SDKPATH in the Makefile
 
 
-== Excuses
+# Excuses
 I'm not a professional embedded programmer (i.e I don't get paid to 
 program embedded code), so I'm sorry if you find these examples a bit
 messy.
@@ -27,7 +27,7 @@ messy.
 Any concrete criticism/improvment requests are welcome. Send me a
 private message on devzone.nordicsemi.com
 
-== Disclamer
+# Disclamer
 This is not an official Nordic Semiconductor release, it's examples
 I've compiled in my "offline" time.
 
