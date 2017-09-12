@@ -12,8 +12,8 @@ Plan:
 # To run
 Ideally it should be
 
-  make
-  make flash
+    make
+    make flash
   
 But rarely that will suffice, you probably have to at least change 
 SDKPATH in the Makefile
