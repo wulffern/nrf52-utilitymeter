@@ -89,8 +89,6 @@ void RTC1_IRQHandler(void)
 
 void saadc_init(){
 
-  
-
     //Setup DMA buffer
     NRF_SAADC->RESULT.MAXCNT = 1;
     NRF_SAADC->RESULT.PTR = (uint32_t)&result;
