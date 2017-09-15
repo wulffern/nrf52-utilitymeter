@@ -45,5 +45,5 @@ foreach(@buffer){
 }
 
 
-system("octave --eval \"data = load('$filename'); addpath('matlab'); oct_dofft(data',4096,1,1,1,1,'');\" --persist");
+print("octave --eval \"data = load('$filename'); addpath('matlab'); oct_dofft(data',4096,1,1,1,1,'');\" --persist");
 

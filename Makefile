@@ -46,8 +46,7 @@ SIZE            := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-size'
 remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-out $(firstword $1),$1))))
 
 #source common to all targets
-C_SOURCE_FILES += $(abspath src/main.c) \
-$(abspath ${SDKPATH}components/toolchain/system_nrf52.c) 
+C_SOURCE_FILES += src/main.c $(abspath ${SDKPATH}components/toolchain/system_nrf52.c) 
 
 
 
@@ -184,6 +183,7 @@ vpath %.c $(C_PATHS)
 vpath %.s $(ASM_PATHS)
 
 OBJECTS = $(C_OBJECTS) $(ASM_OBJECTS)
+
 
 nrf52832_xxaa_s132: OUTPUT_FILENAME := nrf52832_xxaa_s132
 nrf52832_xxaa_s132: LINKER_SCRIPT=src/saadc_barebone.ld
