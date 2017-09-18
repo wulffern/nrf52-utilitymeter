@@ -35,21 +35,9 @@
 #define RESTORE_SOFTDEVICE 1
 #undef SOFTDEVICE_PRESENT
 
-#define COUNT 1
-#define DMA_COUNT 0x1000
-#define RTC_COUNT_MAX 20
 
-int16_t result1[DMA_COUNT] __attribute__((section (".mydata1")));
-int16_t result2[DMA_COUNT] __attribute__((section (".mydata2")));
 
-#define SAADC_LOW_POWER
-
-#ifdef SAADC_LOW_POWER
 #include "saadc_lowpower.c"
-#else
-#include "saadc.c"
-#endif
-
 
 int main(void)
 {
@@ -60,34 +48,10 @@ int main(void)
 	nrf_gpio_pin_write(LED3,1);
 
 	
-    //Configure 
-    NRF_SAADC->CH[0].CONFIG = (
-        SAADC_CH_CONFIG_BURST_Enabled << SAADC_CH_CONFIG_BURST_Pos |
-        SAADC_CH_CONFIG_MODE_Diff << SAADC_CH_CONFIG_MODE_Pos |
-        2 << SAADC_CH_CONFIG_TACQ_Pos |
-        SAADC_CH_CONFIG_REFSEL_Internal << SAADC_CH_CONFIG_TACQ_Pos |
-        SAADC_CH_CONFIG_GAIN_Gain2  << SAADC_CH_CONFIG_GAIN_Pos |
-        SAADC_CH_CONFIG_RESP_Pullup << SAADC_CH_CONFIG_RESN_Pos |
-        SAADC_CH_CONFIG_RESP_Pullup << SAADC_CH_CONFIG_RESP_Pos );
-
-	//Setup AIN4 and AIN5 as inputs
-    NRF_SAADC->CH[0].PSELP = 0x5;
-    NRF_SAADC->CH[0].PSELN = 0x6;
-
-    //Configure the SAADC resolution.
-    NRF_SAADC->RESOLUTION = SAADC_RESOLUTION_VAL_14bit << SAADC_RESOLUTION_VAL_Pos;
-    NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over2x << SAADC_OVERSAMPLE_OVERSAMPLE_Pos;
-
-	    //Use external timing
-	NRF_SAADC->SAMPLERATE = 0;
 
 
-	
-	
-#ifndef SAADC_LOW_POWER
-	ppi_init();
-#endif
-	saadc_init();
+
+   	saadc_init();
 	clock_init();
 
 

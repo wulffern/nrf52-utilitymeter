@@ -5,8 +5,9 @@
 Plan:
 1. Get low power sampling with SAADC working (/)
 2. Add light sensor, and see if I can detect the blinking from the
-   utility meter (x)
-3. Add nRFCloud functionallity (x)
+   utility meter (/)
+3. Try it on a Raspberry Pi to use as a gateway (x)
+4. Add nRFCloud functionallity (x)
 
 
 # To run
