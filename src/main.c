@@ -41,15 +41,14 @@
 
 int main(void)
 {
+   //Enable DC/DC
+	NRF_POWER->DCDCEN = 1;
+	
     nrf_gpio_cfg_output(LED2);
 	nrf_gpio_pin_write(LED2,1);
 
 	nrf_gpio_cfg_output(LED3);
 	nrf_gpio_pin_write(LED3,1);
-
-	
-
-
 
    	saadc_init();
 	clock_init();
@@ -59,14 +58,11 @@ int main(void)
     NVIC_ClearPendingIRQ(SAADC_IRQn);
     NVIC_EnableIRQ(SAADC_IRQn);
 
-
-
-
     // Enter main loop.
     for (;;)
     {
-		__SEV();
         __WFE();
+		__SEV();
 		__WFE();
 
     }

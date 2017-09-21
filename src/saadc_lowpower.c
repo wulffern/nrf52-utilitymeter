@@ -17,120 +17,106 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ********************************************************************/
 
-#define COUNT                (1)
-#define DMA_COUNT            (0x1000)
-#define RTC_COUNT_MAX        (64)
-#define RTC_COUNT_MIN        (64)
-#define RTC_COUNT_PER_MINUTE (32758)
-#define TICKS_TO_AVERAGE     (4096)
-#define BLINKS_PER_KWH       (10000)
+#define DMA_COUNT            (0x1000)   //RAM buffer to store data
+#define RTC_COUNT_MAX        (64)       //Compare value for RTC, sets current
+#define RTC_PRESCALE         (1)        //Slow down RTC clock
+#define RTC_COUNT_PER_MINUTE (32758)    //RTC frequency
+#define TICKS_TO_AVERAGE     (4096)     //How many ticks to average
+#define BLINKS_PER_KWH       (10000)    //Setting on utility meter, change to what yours say
 
+
+//Controlled buffers for watt hour data, and debug data
 int16_t result1[DMA_COUNT] __attribute__((section (".mydata1")));
 int16_t result2[DMA_COUNT] __attribute__((section (".mydata2")));
-
 int16_t results[2];
 
-int saadc_tgl = 0;
 int ind1 = 0;
 int ind2 = 0;
-int swindex = 0;
 int16_t max = INT16_MIN;
 int16_t min = INT16_MAX;
-static int16_t rtcoffset = RTC_COUNT_MAX;
-int16_t val = 0;
-int16_t blinkStatus = 0;
-int16_t lastBlinkStatus = 0;
-int16_t hyst = 10;
-int16_t blinkCounter = 0;
-float scalefactor;
-float wh = 0;
-int16_t ticks = 0;
 
-float ticks_per_minute = 0;
+static int16_t rtc_offset = RTC_COUNT_MAX;
+
+int16_t blink_status = 0;
+int16_t last_blink_status = 0;
+int16_t adc_hysteresis = 10;
+int16_t blink_counter = 0;
+float   scalefactor;
+float   wh = 0;
+int16_t ticks = 0;
+float   ticks_per_minute = 0;
 
 void SAADC_IRQHandler(void)
 {
 
     volatile uint32_t dummy;
-    if(NRF_SAADC->EVENTS_END == 1){
+    if(NRF_SAADC->EVENTS_END == 1 && ticks >= 0){
 
+        //Stop ADC
         NRF_SAADC->EVENTS_END = 0;
         NRF_SAADC->TASKS_STOP = 1;
         while(NRF_SAADC->EVENTS_STOPPED == 0);
         NRF_SAADC->EVENTS_STOPPED = 0;
 
-        //Reset index and get kwh
+        //Reset indexes
         if(ind1 >= DMA_COUNT){
             ind1  = 0;
         }
 
+#ifdef DBG_DATA
         if(ind2 >= DMA_COUNT){
             ind2  = 0;
         }
+#endif
 
+        //Calculate watt hours
         if(ticks >=TICKS_TO_AVERAGE){
 
-            if(blinkCounter > 0){
-
-				wh = blinkCounter *scalefactor;
-
-                if(blinkCounter < TICKS_TO_AVERAGE * 0.3){
-                    rtcoffset++;
-                    if(rtcoffset > RTC_COUNT_MAX){
-                        rtcoffset = RTC_COUNT_MAX;
-                    }
-                }else if (blinkCounter > TICKS_TO_AVERAGE * 0.4){
-                    rtcoffset = rtcoffset-10;
-                    if(rtcoffset < RTC_COUNT_MIN)
-                        rtcoffset = RTC_COUNT_MIN;
-                }
-
+            //Ignore if there are no blinks
+            if(blink_counter > 0){
+                wh = blink_counter *scalefactor;
                 result1[ind1] = (int16_t) (wh);
                 ind1++;
-
             }
 
-            ticks = 0;
-            blinkCounter = 0;
-        }
+            //Control duty cycle, -1 = 50%, -2 = 33% etc...
+            ticks = -1;
 
+            blink_counter = 0;
+        }else{
+			ticks++;
+		}
 
-
+        //Remove median value
         if(results[0] < min){
             min = results[0];
         }
-
         if(results[0] > max){
             max = results[0];
         }
-
-
-
-		
         results[0] -= (max + min)/2;
 
 
-
-		
         //Detected a blink
-        lastBlinkStatus = blinkStatus;
-        if(results[0] <  0 - hyst){
-            blinkStatus = 0;
-        }else if(results[0] > 0 + hyst){
-            blinkStatus = 1;
+        last_blink_status = blink_status;
+        if(results[0] <  0 - adc_hysteresis){
+            blink_status = 0;
+        }else if(results[0] > 0 + adc_hysteresis){
+            blink_status = 1;
         }
-        if(lastBlinkStatus ==0 && blinkStatus == 1){
-            blinkCounter++;
+        if(last_blink_status ==0 && blink_status == 1){
+            blink_counter++;
         }
 
+#ifdef DBG_DATA
+        result2[ind2] = blink_status;
+        ind2++;
+#endif
 
-		result2[ind2] = blinkStatus;
-				ind2++;
-		
         //Reduce/Increase min and max to follow slow changes in lighting
         min = min + 0.0005;
         max = max - 0.0005;
-        ticks++;
+
 
         // Read back event register to ensure we have cleared it before exiting IRQ handler.
         dummy = NRF_SAADC->EVENTS_END;
@@ -147,15 +133,21 @@ void RTC1_IRQHandler(void)
     {
         NRF_RTC1->EVENTS_COMPARE[0] = 0;
 
-        // Increment compare value with to set the beat
-        NRF_RTC1->CC[0] = NRF_RTC1->COUNTER + rtcoffset;
+        if(ticks >= 0){
+            // Increment compare value with rtc_offset to set the beat
+            NRF_RTC1->CC[0] = NRF_RTC1->COUNTER + rtc_offset;
 
+            //Do a sample
+            NRF_SAADC->TASKS_START = 1;
+            while (NRF_SAADC->EVENTS_STARTED == 0);
+            NRF_SAADC->EVENTS_STARTED = 0;
+            NRF_SAADC->TASKS_SAMPLE = 1;
 
-        //Do a sample
-        NRF_SAADC->TASKS_START = 1;
-        while (NRF_SAADC->EVENTS_STARTED == 0);
-        NRF_SAADC->EVENTS_STARTED = 0;
-        NRF_SAADC->TASKS_SAMPLE = 1;
+        }else{
+            // Increment compare value with rtc_offset to set the beat
+            NRF_RTC1->CC[0] = NRF_RTC1->COUNTER + rtc_offset*TICKS_TO_AVERAGE;
+            ticks++;
+        }
 
         // Read back event register to ensure we have cleared it before exiting IRQ handler.
         dummy = NRF_RTC1->EVENTS_COMPARE[0];
@@ -184,7 +176,6 @@ void saadc_init(){
     //Configure the SAADC resolution.
     NRF_SAADC->RESOLUTION = SAADC_RESOLUTION_VAL_14bit << SAADC_RESOLUTION_VAL_Pos;
     NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over4x << SAADC_OVERSAMPLE_OVERSAMPLE_Pos;
-//    NRF_SAADC->OVERSAMPLE = 0;
 
     //Use external timing
     NRF_SAADC->SAMPLERATE = 0;
@@ -193,14 +184,14 @@ void saadc_init(){
     NRF_SAADC->RESULT.MAXCNT = 1;
     NRF_SAADC->RESULT.PTR = (uint32_t)&results;
 
-
     // Enable SAADC
     NRF_SAADC->ENABLE = SAADC_ENABLE_ENABLE_Enabled << SAADC_ENABLE_ENABLE_Pos;
 
     //Enable END event only
     NRF_SAADC->INTEN = ( SAADC_INTEN_END_Enabled << SAADC_INTEN_END_Pos);
 
-	scalefactor = 1000.0 * (3600.0 / ((float) rtcoffset/ (float) RTC_COUNT_PER_MINUTE* (float) TICKS_TO_AVERAGE))/ (float) BLINKS_PER_KWH;
+    // The blinks must be multiplied with seconds_per_hour/seconds_averaged/blinks_per_kw to get watt hours
+    scalefactor = 1000.0 * (3600.0 / ((float) rtc_offset/ ( (float) RTC_COUNT_PER_MINUTE / (float) RTC_PRESCALE) * (float) TICKS_TO_AVERAGE))/ (float) BLINKS_PER_KWH;
 }
 
 
@@ -213,16 +204,9 @@ void clock_init(){
     NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
 
     //Setup and start RTC
-    NRF_RTC1->PRESCALER = 1;
-    NRF_RTC1->CC[0] = rtcoffset;
+    NRF_RTC1->PRESCALER = RTC_PRESCALE;
+    NRF_RTC1->CC[0] = rtc_offset;
     NRF_RTC1->INTENSET = RTC_INTENSET_COMPARE0_Enabled << RTC_INTENSET_COMPARE0_Pos;
     NVIC_EnableIRQ(RTC1_IRQn);
     NRF_RTC1->TASKS_START = 1;
 }
-
-
-
-
-/**
- * @}
- */
