@@ -46,7 +46,9 @@ SIZE            := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-size'
 remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-out $(firstword $1),$1))))
 
 #source common to all targets
-C_SOURCE_FILES += src/main.c $(abspath ${SDKPATH}components/toolchain/system_nrf52.c) 
+C_SOURCE_FILES += src/main.c src/hal_utility.c
+C_SOURCE_FILES += $(abspath ${SDKPATH}components/toolchain/system_nrf52.c)
+C_SOURCE_FILES += solar_sensor_beacon/src/hal_radio.c
 
 
 
@@ -54,7 +56,8 @@ C_SOURCE_FILES += src/main.c $(abspath ${SDKPATH}components/toolchain/system_nrf
 ASM_SOURCE_FILES  = $(abspath ${SDKPATH}components/toolchain/gcc/gcc_startup_nrf52.s)
 
 #includes common to all targets
-#INC_PATHS += -I$(abspath config) 
+#INC_PATHS += -I$(abspath config)
+INC_PATHS += -Isolar_sensor_beacon/inc
 INC_PATHS += -I$(abspath ${SDKPATH}components/drivers_nrf/config)
 INC_PATHS += -I$(abspath ${SDKPATH}components/libraries/timer)
 INC_PATHS += -I$(abspath ${SDKPATH}components/libraries/fifo)
@@ -243,15 +246,13 @@ cleanobj:
 	$(RM) $(BUILD_DIRECTORIES)/*.o
 flash: nrf52832_xxaa_s132
 	@echo Flashing: $(OUTPUT_BINARY_DIRECTORY)/$<.hex
-	nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$<.hex -f nrf52  --sectorerase
-	nrfjprog --reset -f nrf52	
+	nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$<.hex -f nrf52  --sectorerase -s ${SERIAL}
+	nrfjprog --reset -f nrf52	-s ${SERIAL}
 
 ## Flash softdevice
 flash_softdevice:
 	@echo Flashing: s132_nrf52_2.0.0_softdevice.hex
-	nrfjprog --program ${SDKPATH}components/softdevice/s132/hex/s132_nrf52_2.0.0_softdevice.hex -f nrf52 --chiperase
-	nrfjprog --reset -f nrf52
+	nrfjprog --program ${SDKPATH}components/softdevice/s132/hex/s132_nrf52_2.0.0_softdevice.hex -f nrf52 --chiperase -s ${SERIAL}
+	nrfjprog --reset -f nrf52 -s ${SERIAL}
 
-run:
-	nrfjprog -f nRF52 --ramwr 0x20004080 --val 0x1
-	nrfjprog -f nRF52 --run
+

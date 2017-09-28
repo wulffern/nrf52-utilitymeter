@@ -25,6 +25,7 @@
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
 #include "nrf_drv_gpiote.h"
+#include "hal_utility.h"
 
 //nRF52 DK
 #define LED1 17
@@ -37,34 +38,18 @@
 
 
 
-#include "saadc_lowpower.c"
 
 int main(void)
 {
    //Enable DC/DC
 	NRF_POWER->DCDCEN = 1;
-	
-    nrf_gpio_cfg_output(LED2);
-	nrf_gpio_pin_write(LED2,1);
 
-	nrf_gpio_cfg_output(LED3);
-	nrf_gpio_pin_write(LED3,1);
-
-   	saadc_init();
-	clock_init();
-
-
-	NVIC_SetPriority(SAADC_IRQn, 0);
-    NVIC_ClearPendingIRQ(SAADC_IRQn);
-    NVIC_EnableIRQ(SAADC_IRQn);
+	hal_utility_init();
 
     // Enter main loop.
     for (;;)
     {
-        __WFE();
-		__SEV();
-		__WFE();
-
+		hal_utility_state_machine();
     }
 }
 
