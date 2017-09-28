@@ -1,0 +1,3 @@
+[submodule "solar_sensor_beacon"]
+	path = solar_sensor_beacon
+	url = https://github.com/NordicSemiconductor/solar_sensor_beacon

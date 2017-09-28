@@ -75,7 +75,6 @@ void hal_utility_saadc_init();
 void hal_utility_clock_init();
 void hal_utility_rtc_init();
 void hal_utility_init();
-void hal_utility_handler(float wh);
 void send_one_packet(uint8_t channel_index);
 void hal_utility_state_machine();
 
