@@ -21,7 +21,8 @@ But rarely that will suffice, you probably have to at least change
 SDKPATH in the Makefile
 
 The debugger serial can be found with
-	nrfjprog -f nrf52 --ids
+
+	nfjprog -f nrf52 --ids
 
 
 # Excuses
