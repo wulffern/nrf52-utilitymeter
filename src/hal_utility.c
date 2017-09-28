@@ -54,8 +54,9 @@ uint8_t adv_pdu[36 + 3] =
 static bool volatile m_radio_isr_called;    /* Indicates that the radio ISR has executed. */
 
 
-/* Waits for the next NVIC event.
- */
+//--------------------------------------------------------------
+// Waits for the next NVIC event.
+//--------------------------------------------------------------
 #ifdef __GNUC__
 static void __INLINE cpu_wfe(void)
 #else
@@ -67,6 +68,11 @@ static void __INLINE cpu_wfe(void)
     __WFE();
 }
 
+
+//--------------------------------------------------------------
+// Capture the adc samples, filter, and calculate the watt hours
+// at regular intervals
+//--------------------------------------------------------------
 void SAADC_IRQHandler(void)
 {
 
@@ -79,47 +85,47 @@ void SAADC_IRQHandler(void)
         while(NRF_SAADC->EVENTS_STOPPED == 0);
         NRF_SAADC->EVENTS_STOPPED = 0;
 
-        if(ind1 >= DMA_COUNT){
-            ind1 = 0;
-        }
-
-        if(ind2 >= DMA_COUNT){
-            ind2 = 0;
-        }
+        //Reset adc/watt_hour results buffers
+        if(ind1 >= DMA_COUNT) ind1 = 0;
+        if(ind2 >= DMA_COUNT) ind2 = 0;
 
 
         //Calculate watt hours
         if(ticks >=TICKS_TO_AVERAGE){
-            //Ignore if there are no blinks
+
+            //Ignore results if there are no blinks
             if(blink_counter > 0){
                 wh = blink_counter *scalefactor;
                 result2[ind2] = wh;
             }
 
-            //Store watt hours and make it ready to send
+
             uint16_t watt_hours = (uint16_t) wh;
 
-			uint16_t tmp = watt_hours;
+            //Make the watt hours easy to read, use one decimal number per nibble
+            uint16_t tmp = watt_hours;
             uint8_t wh_e5 = tmp/1e5;
-			tmp -= wh_e5*1e5;
+            tmp -= wh_e5*1e5;
             uint8_t wh_e4 = tmp/1e4;
-			tmp -= wh_e4*1e4;
+            tmp -= wh_e4*1e4;
             uint8_t wh_e3 = tmp/1e3;
-			tmp -= wh_e3*1e3;
+            tmp -= wh_e3*1e3;
             uint8_t wh_e2 = tmp/1e2;
-			tmp -= wh_e2*1e2;
+            tmp -= wh_e2*1e2;
             uint8_t wh_e1 = tmp/1e1;
-			tmp -= wh_e1*1e1;
+            tmp -= wh_e1*1e1;
             uint8_t wh_e0 = tmp;
-
-			adv_pdu[32] = 0xFF;
+            adv_pdu[32] = 0xFF;
             adv_pdu[33] = (wh_e5 << 4) | wh_e4 ;
             adv_pdu[34] = (wh_e3 << 4) | wh_e2 ;
             adv_pdu[35] = (wh_e1 << 4) | wh_e0;
-			
+
+            //Send the hex value also
             adv_pdu[36] = 0xFF;
             adv_pdu[37] = (uint8_t) (watt_hours >> 8);
             adv_pdu[38] = (uint8_t) watt_hours;
+
+            //Let the state machine know that we're ready to transmitt
             state = POWER_DATA_READY;
 
             //Control duty cycle, -1 = 50%, -2 = 33% etc...
@@ -130,7 +136,7 @@ void SAADC_IRQHandler(void)
             ticks++;
         }
 
-        //Remove median value
+        //Remove median value, helps with offset
         if(results[0] < min){
             min = results[0];
         }
@@ -139,11 +145,12 @@ void SAADC_IRQHandler(void)
         }
         results[0] -= (max + min)/2;
 
+        //Store SAADC values
         result1[ind1] = results[0];
         ind1++;
 
 
-        //Detected a blink
+        //Detected a blink, basically a zero cross detection
         last_blink_status = blink_status;
         if(results[0] <  0 - adc_hysteresis){
             blink_status = 0;
@@ -159,7 +166,6 @@ void SAADC_IRQHandler(void)
         min = min + 0.0005;
         max = max - 0.0005;
 
-
         // Read back event register to ensure we have cleared it before exiting IRQ handler.
         dummy = NRF_SAADC->EVENTS_END;
         dummy;
@@ -168,6 +174,9 @@ void SAADC_IRQHandler(void)
 
 }
 
+//--------------------------------------------------------------
+// Keep the beat. 
+//--------------------------------------------------------------
 void RTC2_IRQHandler(void)
 {
     volatile uint32_t dummy;
@@ -179,6 +188,7 @@ void RTC2_IRQHandler(void)
             // Increment compare value with rtc_offset to set the beat
             NRF_RTC2->CC[0] = NRF_RTC2->COUNTER + rtc_offset;
 
+            //Skip SAADC sampling if we're doing anything else
             if(state == SAADC_CAPTURE){
                 //Do a sample
                 NRF_SAADC->TASKS_START = 1;
@@ -188,7 +198,7 @@ void RTC2_IRQHandler(void)
             }
 
         }else{
-            // Increment compare value with rtc_offset to set the beat
+            //Sleep for a while to reduce current consumption
             NRF_RTC2->CC[0] = NRF_RTC2->COUNTER + rtc_offset*TICKS_TO_AVERAGE;
             ticks++;
         }
@@ -200,6 +210,9 @@ void RTC2_IRQHandler(void)
 }
 
 
+//--------------------------------------------------------------
+// Configure differential measurement of AIN4 and AIN5
+//--------------------------------------------------------------
 void hal_utility_saadc_init(){
 
     //Configure channel 0
@@ -241,7 +254,9 @@ void hal_utility_saadc_init(){
     NVIC_EnableIRQ(SAADC_IRQn);
 }
 
-
+//--------------------------------------------------------------
+// Setup XOSC32K
+//--------------------------------------------------------------
 void hal_utility_clock_init(){
     NRF_CLOCK->LFCLKSRC = CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos;
     NRF_CLOCK->TASKS_LFCLKSTART = 1;
@@ -249,9 +264,10 @@ void hal_utility_clock_init(){
     NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
 }
 
+//--------------------------------------------------------------
+// Setup RTC, and interrupts
+//--------------------------------------------------------------
 void hal_utility_rtc_init(){
-
-    //Setup and start RTC
     NRF_RTC2->PRESCALER = RTC_PRESCALE;
     NRF_RTC2->CC[0] = rtc_offset;
     NRF_RTC2->INTENSET = RTC_INTENSET_COMPARE0_Enabled << RTC_INTENSET_COMPARE0_Pos;
@@ -259,9 +275,14 @@ void hal_utility_rtc_init(){
     NRF_RTC2->TASKS_START = 1;
 }
 
+
+//--------------------------------------------------------------
+// Setup everything, and reset radio
+//--------------------------------------------------------------
 void hal_utility_init(){
 
     state = SAADC_CAPTURE_INIT;
+
     hal_utility_saadc_init();
     hal_utility_clock_init();
     hal_utility_rtc_init();
@@ -280,6 +301,10 @@ void hal_utility_init(){
     hal_radio_reset();
 }
 
+
+//--------------------------------------------------------------
+// Control the current state
+//--------------------------------------------------------------
 void hal_utility_state_machine(){
 
     switch(state){
@@ -294,20 +319,15 @@ void hal_utility_state_machine(){
         cpu_wfe();
         break;
     case POWER_DATA_READY:
-
-
         state = ADVERTIZE;
         NRF_CLOCK->TASKS_HFCLKSTART = 1;
         while(NRF_CLOCK->EVENTS_HFCLKSTARTED == 0);
         NRF_CLOCK->EVENTS_HFCLKSTARTED =0;
         break;
-
     case ADVERTIZE:
-
 #ifdef DBG_STATES
         nrf_gpio_pin_write(LED1,0);
 #endif
-
         send_one_packet(37);
         send_one_packet(38);
         send_one_packet(39);
@@ -321,14 +341,12 @@ void hal_utility_state_machine(){
         break;
     }
 
-
-
-
 }
 
 
-/* Sends an advertising PDU on the given channel index.
- */
+//--------------------------------------------------------------
+// Sends an advertising PDU on the given channel index.
+//--------------------------------------------------------------
 void send_one_packet(uint8_t channel_index)
 {
     uint8_t i;
@@ -348,7 +366,9 @@ void send_one_packet(uint8_t channel_index)
 }
 
 
-
+//--------------------------------------------------------------
+// Shutdown radio when it's done
+//--------------------------------------------------------------
 void RADIO_IRQHandler(void)
 {
     NRF_RADIO->EVENTS_DISABLED = 0;

@@ -27,28 +27,19 @@
 #include "nrf_drv_gpiote.h"
 #include "hal_utility.h"
 
-//nRF52 DK
-#define LED1 17
-#define LED2 18
-#define LED3 19
-#define LED4 20
-
-#define RESTORE_SOFTDEVICE 1
-#undef SOFTDEVICE_PRESENT
-
-
-
 
 int main(void)
 {
    //Enable DC/DC
 	NRF_POWER->DCDCEN = 1;
 
+	//Fire up the utility meter
 	hal_utility_init();
 
-    // Enter main loop.
+
     for (;;)
     {
+		//Kick the state machine
 		hal_utility_state_machine();
     }
 }

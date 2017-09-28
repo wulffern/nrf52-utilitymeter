@@ -97,7 +97,6 @@ BUILD_DIRECTORIES := $(sort $(OBJECT_DIRECTORY) $(OUTPUT_BINARY_DIRECTORY) $(LIS
 
 #flags common to all targets
 CFLAGS  = -DNRF52
-CFLAGS += -DSOFTDEVICE_PRESENT
 CFLAGS += -DBOARD_PCA10040
 CFLAGS += -DNRF52_PAN_12
 CFLAGS += -DNRF52_PAN_15
@@ -110,7 +109,6 @@ CFLAGS += -DNRF52_PAN_51
 CFLAGS += -DNRF52_PAN_36
 CFLAGS += -DNRF52_PAN_53
 CFLAGS += -DNRF_LOG_USES_UART=1
-CFLAGS += -DS132
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
 CFLAGS += -DBLE_STACK_SUPPORT_REQD
 CFLAGS += -DSWI_DISABLE0
@@ -244,15 +242,20 @@ clean:
 
 cleanobj:
 	$(RM) $(BUILD_DIRECTORIES)/*.o
+
+ifdef ${SERIAL}
+USE_SERIAL = -s ${SERIAL}
+endif
+
 flash: nrf52832_xxaa_s132
 	@echo Flashing: $(OUTPUT_BINARY_DIRECTORY)/$<.hex
-	nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$<.hex -f nrf52  --sectorerase -s ${SERIAL}
-	nrfjprog --reset -f nrf52	-s ${SERIAL}
+	nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$<.hex -f nrf52  --sectorerase ${USE_SERIAL}
+	nrfjprog --reset -f nrf52	${USE_SERIAL}
 
 ## Flash softdevice
 flash_softdevice:
 	@echo Flashing: s132_nrf52_2.0.0_softdevice.hex
-	nrfjprog --program ${SDKPATH}components/softdevice/s132/hex/s132_nrf52_2.0.0_softdevice.hex -f nrf52 --chiperase -s ${SERIAL}
-	nrfjprog --reset -f nrf52 -s ${SERIAL}
+	nrfjprog --program ${SDKPATH}components/softdevice/s132/hex/s132_nrf52_2.0.0_softdevice.hex -f nrf52 --chiperase ${USE_SERIAL}
+	nrfjprog --reset -f nrf52  ${USE_SERIAL}
 
 

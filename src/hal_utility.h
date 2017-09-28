@@ -69,6 +69,7 @@ typedef enum sensor_state sensor_state_t;
 
 
 void SAADC_IRQHandler(void);
+void RADIO_IRQHandler(void);
 void RTC2_IRQHandler(void);
 
 void hal_utility_saadc_init();
