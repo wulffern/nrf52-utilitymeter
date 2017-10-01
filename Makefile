@@ -46,7 +46,9 @@ SIZE            := '$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-size'
 remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-out $(firstword $1),$1))))
 
 #source common to all targets
-C_SOURCE_FILES += src/main.c $(abspath ${SDKPATH}components/toolchain/system_nrf52.c) 
+C_SOURCE_FILES += src/main.c src/hal_utility.c
+C_SOURCE_FILES += $(abspath ${SDKPATH}components/toolchain/system_nrf52.c)
+C_SOURCE_FILES += solar_sensor_beacon/src/hal_radio.c
 
 
 
@@ -54,7 +56,8 @@ C_SOURCE_FILES += src/main.c $(abspath ${SDKPATH}components/toolchain/system_nrf
 ASM_SOURCE_FILES  = $(abspath ${SDKPATH}components/toolchain/gcc/gcc_startup_nrf52.s)
 
 #includes common to all targets
-#INC_PATHS += -I$(abspath config) 
+#INC_PATHS += -I$(abspath config)
+INC_PATHS += -Isolar_sensor_beacon/inc
 INC_PATHS += -I$(abspath ${SDKPATH}components/drivers_nrf/config)
 INC_PATHS += -I$(abspath ${SDKPATH}components/libraries/timer)
 INC_PATHS += -I$(abspath ${SDKPATH}components/libraries/fifo)
@@ -94,7 +97,6 @@ BUILD_DIRECTORIES := $(sort $(OBJECT_DIRECTORY) $(OUTPUT_BINARY_DIRECTORY) $(LIS
 
 #flags common to all targets
 CFLAGS  = -DNRF52
-CFLAGS += -DSOFTDEVICE_PRESENT
 CFLAGS += -DBOARD_PCA10040
 CFLAGS += -DNRF52_PAN_12
 CFLAGS += -DNRF52_PAN_15
@@ -107,7 +109,6 @@ CFLAGS += -DNRF52_PAN_51
 CFLAGS += -DNRF52_PAN_36
 CFLAGS += -DNRF52_PAN_53
 CFLAGS += -DNRF_LOG_USES_UART=1
-CFLAGS += -DS132
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
 CFLAGS += -DBLE_STACK_SUPPORT_REQD
 CFLAGS += -DSWI_DISABLE0
@@ -241,17 +242,20 @@ clean:
 
 cleanobj:
 	$(RM) $(BUILD_DIRECTORIES)/*.o
+
+ifdef ${SERIAL}
+USE_SERIAL = -s ${SERIAL}
+endif
+
 flash: nrf52832_xxaa_s132
 	@echo Flashing: $(OUTPUT_BINARY_DIRECTORY)/$<.hex
-	nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$<.hex -f nrf52  --sectorerase
-	nrfjprog --reset -f nrf52	
+	nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$<.hex -f nrf52  --sectorerase ${USE_SERIAL}
+	nrfjprog --reset -f nrf52	${USE_SERIAL}
 
 ## Flash softdevice
 flash_softdevice:
 	@echo Flashing: s132_nrf52_2.0.0_softdevice.hex
-	nrfjprog --program ${SDKPATH}components/softdevice/s132/hex/s132_nrf52_2.0.0_softdevice.hex -f nrf52 --chiperase
-	nrfjprog --reset -f nrf52
+	nrfjprog --program ${SDKPATH}components/softdevice/s132/hex/s132_nrf52_2.0.0_softdevice.hex -f nrf52 --chiperase ${USE_SERIAL}
+	nrfjprog --reset -f nrf52  ${USE_SERIAL}
 
-run:
-	nrfjprog -f nRF52 --ramwr 0x20004080 --val 0x1
-	nrfjprog -f nRF52 --run
+

@@ -17,6 +17,10 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ********************************************************************/
 
+
+#ifndef HAL_UTILITY_CW__
+#define HAL_UTILITY_CW__
+
 #include <stdint.h>
 #include <string.h>
 #include "nordic_common.h"
@@ -24,27 +28,57 @@
 #include "math.h"
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
-#include "nrf_drv_gpiote.h"
-#include "hal_utility.h"
+#include "hal_radio.h"
+
+#ifndef LED1
+#define LED1 17
+#endif
+
+#ifndef LED2
+#define LED2 18
+#endif
+
+#ifndef LED3
+#define LED3 19
+#endif
 
 
-int main(void)
-{
-   //Enable DC/DC
-	NRF_POWER->DCDCEN = 1;
-
-	//Fire up the utility meter
-	hal_utility_init();
+#ifndef LED4
+#define LED4 20
+#endif
 
 
-    for (;;)
-    {
-		//Kick the state machine
-		hal_utility_state_machine();
-    }
-}
+#define DBG_STATES
+
+#define DMA_COUNT            (0x1000)   //RAM buffer to store data
+#define RTC_COUNT_MAX        (64)       //Compare value for RTC, sets current
+#define RTC_PRESCALE         (0)        //Slow down RTC clock
+#define RTC_COUNT_PER_MINUTE (32768)    //RTC frequency
+#define TICKS_TO_AVERAGE     (8192)     //How many ticks to average
+#define BLINKS_PER_KWH       (10000)    //Setting on utility meter,
+                                        //change to what yours say
+
+enum sensor_state{
+    SAADC_CAPTURE_INIT,
+	SAADC_CAPTURE,    
+	POWER_DATA_READY,
+	ADVERTIZE
+};
+
+typedef enum sensor_state sensor_state_t;
 
 
-/**
- * @}
- */
+void SAADC_IRQHandler(void);
+void RADIO_IRQHandler(void);
+void RTC2_IRQHandler(void);
+
+void hal_utility_saadc_init();
+void hal_utility_clock_init();
+void hal_utility_rtc_init();
+void hal_utility_init();
+void send_one_packet(uint8_t channel_index);
+void hal_utility_state_machine();
+
+
+
+#endif

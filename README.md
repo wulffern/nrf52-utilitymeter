@@ -6,6 +6,7 @@ Plan:
 1. Get low power sampling with SAADC working (/)
 2. Add light sensor, and see if I can detect the blinking from the
    utility meter (/)
+3. Add low-power beacon based on https://github.com/NordicSemiconductor/solar_sensor_beacon (/)
 3. Try it on a Raspberry Pi to use as a gateway (x)
 4. Add nRFCloud functionallity (x)
 
@@ -14,10 +15,14 @@ Plan:
 Ideally it should be
 
     make
-    make flash
+    make SERIAL=<debugger serial> flash 
   
 But rarely that will suffice, you probably have to at least change 
 SDKPATH in the Makefile
+
+The debugger serial can be found with
+
+	nfjprog -f nrf52 --ids
 
 
 # Excuses
