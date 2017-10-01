@@ -32,7 +32,7 @@ int16_t rtc_offset = RTC_COUNT_MAX;
 
 int16_t blink_status = 0;
 int16_t last_blink_status = 0;
-int16_t adc_hysteresis = 10;
+int16_t adc_hysteresis = 50;
 int16_t blink_counter = 0;
 float   scalefactor;
 float   wh = 0;
@@ -96,7 +96,8 @@ void SAADC_IRQHandler(void)
             //Ignore results if there are no blinks
             if(blink_counter > 0){
                 wh = blink_counter *scalefactor;
-                result2[ind2] = wh;
+				result2[ind2] = wh;
+				ind2++;
             }
 
 
@@ -129,7 +130,11 @@ void SAADC_IRQHandler(void)
             state = POWER_DATA_READY;
 
             //Control duty cycle, -1 = 50%, -2 = 33% etc...
-            ticks = -1;
+            ticks = 0;
+			
+			//Reduce/Increase min and max to follow slow changes in lighting
+			min = min + 1;
+			max = max - 1;
 
             blink_counter = 0;
         }else{
@@ -157,14 +162,12 @@ void SAADC_IRQHandler(void)
         }else if(results[0] > 0 + adc_hysteresis){
             blink_status = 1;
         }
-        if(last_blink_status ==0 && blink_status == 1){
+        if(last_blink_status ==1 && blink_status == 0){
             blink_counter++;
         }
 
 
-        //Reduce/Increase min and max to follow slow changes in lighting
-        min = min + 0.0005;
-        max = max - 0.0005;
+
 
         // Read back event register to ensure we have cleared it before exiting IRQ handler.
         dummy = NRF_SAADC->EVENTS_END;
@@ -219,9 +222,9 @@ void hal_utility_saadc_init(){
     NRF_SAADC->CH[0].CONFIG = (
         SAADC_CH_CONFIG_BURST_Enabled << SAADC_CH_CONFIG_BURST_Pos |
         SAADC_CH_CONFIG_MODE_Diff << SAADC_CH_CONFIG_MODE_Pos |
-        SAADC_CH_CONFIG_TACQ_3us << SAADC_CH_CONFIG_TACQ_Pos |
-        SAADC_CH_CONFIG_REFSEL_VDD1_4 << SAADC_CH_CONFIG_REFSEL_Pos |
-        SAADC_CH_CONFIG_GAIN_Gain1_5 << SAADC_CH_CONFIG_GAIN_Pos |
+        SAADC_CH_CONFIG_TACQ_5us << SAADC_CH_CONFIG_TACQ_Pos |
+        SAADC_CH_CONFIG_REFSEL_Internal << SAADC_CH_CONFIG_REFSEL_Pos |
+        SAADC_CH_CONFIG_GAIN_Gain1_2 << SAADC_CH_CONFIG_GAIN_Pos |
         SAADC_CH_CONFIG_RESP_Pullup << SAADC_CH_CONFIG_RESP_Pos |
         SAADC_CH_CONFIG_RESN_Pullup << SAADC_CH_CONFIG_RESN_Pos );
 
@@ -248,7 +251,7 @@ void hal_utility_saadc_init(){
     NRF_SAADC->INTEN = ( SAADC_INTEN_END_Enabled << SAADC_INTEN_END_Pos);
 
     // The blinks must be multiplied with seconds_per_hour/seconds_averaged/blinks_per_kw to get watt hours
-    scalefactor = 1000.0 * (3600.0 / ((float) rtc_offset/ ( (float) RTC_COUNT_PER_MINUTE / (float) RTC_PRESCALE) * (float) TICKS_TO_AVERAGE))/ (float) BLINKS_PER_KWH;
+    scalefactor = 1000.0 * (3600.0 / ((float) rtc_offset/ ( (float) RTC_COUNT_PER_MINUTE / (float) (RTC_PRESCALE + 1) ) * (float) TICKS_TO_AVERAGE))/ (float) BLINKS_PER_KWH;
 
     NVIC_ClearPendingIRQ(SAADC_IRQn);
     NVIC_EnableIRQ(SAADC_IRQn);

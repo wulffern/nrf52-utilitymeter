@@ -52,9 +52,9 @@
 
 #define DMA_COUNT            (0x1000)   //RAM buffer to store data
 #define RTC_COUNT_MAX        (64)       //Compare value for RTC, sets current
-#define RTC_PRESCALE         (1)        //Slow down RTC clock
+#define RTC_PRESCALE         (0)        //Slow down RTC clock
 #define RTC_COUNT_PER_MINUTE (32768)    //RTC frequency
-#define TICKS_TO_AVERAGE     (1024)     //How many ticks to average
+#define TICKS_TO_AVERAGE     (8192)     //How many ticks to average
 #define BLINKS_PER_KWH       (10000)    //Setting on utility meter,
                                         //change to what yours say
 
