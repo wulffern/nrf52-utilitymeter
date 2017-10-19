@@ -38,7 +38,7 @@ foreach(@buffer){
   foreach my $i (0..7){
 	my $hex = $line[$i];
 	my $dec = hex($hex);
-	$dec -= 65536 if $dec >= 16384;
+#	$dec -= 65536 if $dec >= 32768;
 	print $fh $dec."\n";
   }
 }

@@ -28,19 +28,19 @@ int ind1 = 0;
 int ind2 = 0;
 int16_t max = INT16_MIN;
 int16_t min = INT16_MAX;
-int16_t rtc_offset = RTC_COUNT_MAX;
+uint16_t rtc_offset = RTC_COUNT_MAX;
 
-int16_t blink_status = 0;
-int16_t last_blink_status = 0;
-int16_t adc_hysteresis = 50;
-int16_t blink_counter = 0;
-float   scalefactor;
-float   wh = 0;
-int16_t ticks = 0;
-float   ticks_per_minute = 0;
+uint16_t blink_status = 0;
+uint16_t last_blink_status = 0;
+uint16_t adc_hysteresis = 50;
+uint16_t blink_counter = 0;
+
+uint16_t  scalefactor ;
+uint16_t   wh = 0;
+uint16_t ticks = 0;
 
 int16_t result1[DMA_COUNT] __attribute__((section (".mydata1")));
-int16_t result2[DMA_COUNT] __attribute__((section (".mydata2")));
+uint16_t result2[DMA_COUNT] __attribute__((section (".mydata2")));
 
 uint8_t adv_pdu[36 + 3] =
 {
@@ -95,7 +95,7 @@ void SAADC_IRQHandler(void)
 
             //Ignore results if there are no blinks
             if(blink_counter > 0){
-                wh = blink_counter *scalefactor;
+                wh = blink_counter * scalefactor;
 				result2[ind2] = wh;
 				ind2++;
             }
@@ -250,8 +250,8 @@ void hal_utility_saadc_init(){
     //Enable END event only
     NRF_SAADC->INTEN = ( SAADC_INTEN_END_Enabled << SAADC_INTEN_END_Pos);
 
-    // The blinks must be multiplied with seconds_per_hour/seconds_averaged/blinks_per_kw to get watt hours
-    scalefactor = 1000.0 * (3600.0 / ((float) rtc_offset/ ( (float) RTC_COUNT_PER_MINUTE / (float) (RTC_PRESCALE + 1) ) * (float) TICKS_TO_AVERAGE))/ (float) BLINKS_PER_KWH;
+	// The blinks must be multiplied with seconds_per_hour/seconds_averaged/blinks_per_kw to get watt hours
+	scalefactor = 1000.0 * (3600.0 / ( (TICKS_TO_AVERAGE * rtc_offset) / (  RTC_COUNT_PER_MINUTE /  (RTC_PRESCALE + 1) ) ) )/ BLINKS_PER_KWH;
 
     NVIC_ClearPendingIRQ(SAADC_IRQn);
     NVIC_EnableIRQ(SAADC_IRQn);
@@ -331,9 +331,7 @@ void hal_utility_state_machine(){
 #ifdef DBG_STATES
         nrf_gpio_pin_write(LED1,0);
 #endif
-        send_one_packet(37);
         send_one_packet(38);
-        send_one_packet(39);
 
 #ifdef DBG_STATES
         nrf_gpio_pin_write(LED1,1);
