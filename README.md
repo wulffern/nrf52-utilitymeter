@@ -16,7 +16,7 @@ diodes, which prevents static current since the pull-up's are
 disconnected when SAADC is not sampling.
 
 ## Equipment
-- nRF52832 DK (PCA 10040)
+- nRF52832 DK [PCA 10040](http://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52-DK)
 - Photo sensitive diode (i.e ALS-PT204-6C/L177)
 
 ## Algorithm
