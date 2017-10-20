@@ -5,14 +5,14 @@
 In my house I use way to much power (40 MWh per year), and I
 wanted to figure out why. On my power meter I have a blinking light that blinks 10 000 times per
 kWh. Thus, enter nRF52 with SAADC and some photo
-sensitive LEDs. The setup is shown below:
+sensitive diodes. The setup is shown below:
 
 ![Setup](/graphics/utilitymeter.png)
 
 The general idea is to detect the blinking light with an
-photo-sensitive LED, and use a second LED for ambient light
+photo-sensitive diode, and use a second diode for ambient light
 cancellation. The pull-up resistors in the SAADC are used to bias the
-LEDs, which prevents static current since the pull-up's are
+diodes, which prevents static current since the pull-up's are
 disconnected when SAADC is not sampling.
 
 ## Algorithm
