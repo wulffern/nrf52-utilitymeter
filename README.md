@@ -95,6 +95,10 @@ messy.
 Any concrete criticism/improvment requests are welcome. Send me a
 private message on devzone.nordicsemi.com
 
+## Thanks to
+- Hans E. for help with the Solar Sensor Beacon Packet format
+- Håkon A., Jon Gunnar S. and the Nordic support team for answering questions.
+
 ## Disclamer
 This is not an official Nordic Semiconductor release, it's examples
 I've compiled in my "offline" time.
