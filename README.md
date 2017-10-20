@@ -15,6 +15,10 @@ cancellation. The pull-up resistors in the SAADC are used to bias the
 diodes, which prevents static current since the pull-up's are
 disconnected when SAADC is not sampling.
 
+## Equipment
+- nRF52832 DK (PCA 10040)
+- Photo sensitive diode (i.e ALS-PT204-6C/L177)
+
 ## Algorithm
 The best way to understand the algorithm is to read the code, because
 it may have changed, but in broad strokes
