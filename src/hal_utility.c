@@ -251,7 +251,7 @@ void hal_utility_saadc_init(){
     NRF_SAADC->INTEN = ( SAADC_INTEN_END_Enabled << SAADC_INTEN_END_Pos);
 
 	// The blinks must be multiplied with seconds_per_hour/seconds_averaged/blinks_per_kw to get watt hours
-	scalefactor = 1000.0 * (3600.0 / ( (TICKS_TO_AVERAGE * rtc_offset) / (  RTC_COUNT_PER_MINUTE /  (RTC_PRESCALE + 1) ) ) )/ BLINKS_PER_KWH;
+	scalefactor = 1000.0 * (3600.0 / ( (TICKS_TO_AVERAGE * rtc_offset) / (  RTC_COUNT_PER_SECOND /  (RTC_PRESCALE + 1) ) ) )/ BLINKS_PER_KWH;
 
     NVIC_ClearPendingIRQ(SAADC_IRQn);
     NVIC_EnableIRQ(SAADC_IRQn);
@@ -331,7 +331,9 @@ void hal_utility_state_machine(){
 #ifdef DBG_STATES
         nrf_gpio_pin_write(LED1,0);
 #endif
+		send_one_packet(37);
         send_one_packet(38);
+		send_one_packet(39);
 
 #ifdef DBG_STATES
         nrf_gpio_pin_write(LED1,1);

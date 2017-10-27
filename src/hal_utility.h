@@ -53,10 +53,11 @@
 #define DMA_COUNT            (0x1000)   //RAM buffer to store data
 #define RTC_COUNT_MAX        (64)       //Compare value for RTC, sets current
 #define RTC_PRESCALE         (0)        //Slow down RTC clock
-#define RTC_COUNT_PER_MINUTE (32768)    //RTC frequency
+#define RTC_COUNT_PER_SECOND (32768)    //RTC frequency
 #define TICKS_TO_AVERAGE     (2048)     //How many ticks to average
+
 #define BLINKS_PER_KWH       (10000)    //Setting on utility meter,
-                                        //change to what yours say
+                                        //change to what yours say (blinks/kwh)
 
 enum sensor_state{
     SAADC_CAPTURE_INIT,
