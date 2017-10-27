@@ -17,7 +17,9 @@ disconnected when SAADC is not sampling.
 
 ## Equipment
 - nRF52832 DK [PCA 10040](http://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52-DK)
-- Photo sensitive diode (I'm using [TEPT 5600](https://www.elfadistrelec.no/no/sensor-for-omgivelseslys-570-nm-25-140-ua-vishay-tept-5600/p/17522425?channel=b2b&price_afd=4.69&gclid=CjwKCAjwssvPBRBBEiwASFoVd6O3ZSBKCkvYCGIcLTu5Lv50wTM1IL8qSL6yn2cJLDt1JOD39pFJgxoCI1gQAvD_BwE&gclsrc=aw.ds))
+- Photo sensitive diode (I'm using
+  [TEPT 5600](https://www.elfadistrelec.no/no/sensor-for-omgivelseslys-570-nm-25-140-ua-vishay-tept-5600/p/17522425?channel=b2b&price_afd=4.69&gclid=CjwKCAjwssvPBRBBEiwASFoVd6O3ZSBKCkvYCGIcLTu5Lv50wTM1IL8qSL6yn2cJLDt1JOD39pFJgxoCI1gQAvD_BwE&gclsrc=aw.ds),
+  which is actually a phototransistor, but that's details)
 
 ## Algorithm
 The best way to understand the algorithm is to read the code, because
