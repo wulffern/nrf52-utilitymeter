@@ -22,9 +22,9 @@ class ScanDelegate(DefaultDelegate):
 
             
 scanner = Scanner().withDelegate(ScanDelegate())
-scanner.start()
+#- Scanning for 1 second seems like a good choice. If it's longer than the advertizer interval, then it does not always call the discovery delegate
 while(1):
-    scanner.process()
-scanner.stop()
+    scanner.scan(1)
+
 
 
