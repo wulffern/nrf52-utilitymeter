@@ -1,21 +1,29 @@
 /*********************************************************************
- *        Copyright (c) 2017 Carsten Wulff Software, Norway
+ *        Copyright (c) 2017 Carsten Wulff Software, Norway 
  * *******************************************************************
- * Created       : wulff at 2017-8-26
+ * Created       : wulff at 2017-08-26
  * *******************************************************************
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  The MIT License (MIT)
+ * 
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ * 
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ * 
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *  SOFTWARE.
  ********************************************************************/
+
 
 #include "hal_utility.h"
 
@@ -36,7 +44,7 @@ uint16_t adc_hysteresis = 50;
 uint16_t blink_counter = 0;
 
 uint16_t  scalefactor ;
-uint16_t   wh = 0;
+uint16_t   w = 0;
 uint16_t ticks = 0;
 
 int16_t result1[DMA_COUNT] __attribute__((section (".mydata1")));
@@ -46,9 +54,8 @@ uint8_t adv_pdu[36 + 3] =
 {
     0x42, 0x24, 0x00,
     0xE2, 0xA3, 0x01, 0xE7, 0x61, 0xF7,
-    0x02, 0x01, 0x04, 0x1A, 0xFF,
-    0x59, 0x00, 0x02, 0x15, 0x01, 0x12, 0x23,
-    0x34, 0x45, 0x56, 0x67, 0x78, 0x89, 0x9A, 0xAB, 0xBC, 0xCD, 0xDE, 0xEF, 0xF0, 0x01, 0x02, 0x03, 0x04, 0xC3
+    15,    9,  'c', 'a' ,  'w',  'u',  ':',  ' ', 'w',   ':', ' ',     0,    0,  0,  0,  0,
+    12, 0xff, 0xAB, 0xBC, 0xCD, 0xDE, 0xEF, 0xF0, 0x01, 0x02, 0x03, 0x04, 0xC3
 };
 
 static bool volatile m_radio_isr_called;    /* Indicates that the radio ISR has executed. */
@@ -95,46 +102,55 @@ void SAADC_IRQHandler(void)
 
             //Ignore results if there are no blinks
             if(blink_counter > 0){
-                wh = blink_counter * scalefactor;
-				result2[ind2] = wh;
-				ind2++;
+                w = blink_counter * scalefactor;
+                result2[ind2] = w;
+                ind2++;
             }
 
 
-            uint16_t watt_hours = (uint16_t) wh;
+            uint16_t watt = (uint16_t) w;
 
             //Make the watt hours easy to read, use one decimal number per nibble
-            uint16_t tmp = watt_hours;
-            uint8_t wh_e5 = tmp/1e5;
-            tmp -= wh_e5*1e5;
-            uint8_t wh_e4 = tmp/1e4;
-            tmp -= wh_e4*1e4;
-            uint8_t wh_e3 = tmp/1e3;
-            tmp -= wh_e3*1e3;
-            uint8_t wh_e2 = tmp/1e2;
-            tmp -= wh_e2*1e2;
-            uint8_t wh_e1 = tmp/1e1;
-            tmp -= wh_e1*1e1;
-            uint8_t wh_e0 = tmp;
+            char str[5];
+            sprintf(str, "%05d", watt);
+            adv_pdu[20] = str[0];
+            adv_pdu[20+1] = str[0+1];
+            adv_pdu[20+2] = str[0+2];
+            adv_pdu[20+3] = str[0+3];
+            adv_pdu[20+4] = str[0+4];
+
+            uint16_t tmp = watt;
+            uint8_t w_e5 = tmp/1e5;
+            tmp -= w_e5*1e5;
+            uint8_t w_e4 = tmp/1e4;
+            tmp -= w_e4*1e4;
+            uint8_t w_e3 = tmp/1e3;
+            tmp -= w_e3*1e3;
+            uint8_t w_e2 = tmp/1e2;
+            tmp -= w_e2*1e2;
+            uint8_t w_e1 = tmp/1e1;
+            tmp -= w_e1*1e1;
+            uint8_t w_e0 = tmp;
             adv_pdu[32] = 0xFF;
-            adv_pdu[33] = (wh_e5 << 4) | wh_e4 ;
-            adv_pdu[34] = (wh_e3 << 4) | wh_e2 ;
-            adv_pdu[35] = (wh_e1 << 4) | wh_e0;
+            adv_pdu[33] = (w_e5 << 4) | w_e4 ;
+            adv_pdu[34] = (w_e3 << 4) | w_e2 ;
+            adv_pdu[35] = (w_e1 << 4) | w_e0;
 
             //Send the hex value also
             adv_pdu[36] = 0xFF;
-            adv_pdu[37] = (uint8_t) (watt_hours >> 8);
-            adv_pdu[38] = (uint8_t) watt_hours;
+            adv_pdu[37] = (uint8_t) (watt >> 8);
+            adv_pdu[38] = (uint8_t) watt;
+
 
             //Let the state machine know that we're ready to transmitt
             state = POWER_DATA_READY;
 
             //Control duty cycle, -1 = 50%, -2 = 33% etc...
             ticks = 0;
-			
-			//Reduce/Increase min and max to follow slow changes in lighting
-			min = min + 1;
-			max = max - 1;
+
+            //Reduce/Increase min and max to follow slow changes in lighting
+            min = min + 1;
+            max = max - 1;
 
             blink_counter = 0;
         }else{
@@ -178,7 +194,7 @@ void SAADC_IRQHandler(void)
 }
 
 //--------------------------------------------------------------
-// Keep the beat. 
+// Keep the beat.
 //--------------------------------------------------------------
 void RTC2_IRQHandler(void)
 {
@@ -250,8 +266,8 @@ void hal_utility_saadc_init(){
     //Enable END event only
     NRF_SAADC->INTEN = ( SAADC_INTEN_END_Enabled << SAADC_INTEN_END_Pos);
 
-	// The blinks must be multiplied with seconds_per_hour/seconds_averaged/blinks_per_kw to get watt hours
-	scalefactor = 1000.0 * (3600.0 / ( (TICKS_TO_AVERAGE * rtc_offset) / (  RTC_COUNT_PER_SECOND /  (RTC_PRESCALE + 1) ) ) )/ BLINKS_PER_KWH;
+    // The blinks must be multiplied with seconds_per_hour/seconds_averaged/blinks_per_kw to get watt hours
+    scalefactor = 1000.0 * (3600.0 / ( (TICKS_TO_AVERAGE * rtc_offset) / (  RTC_COUNT_PER_SECOND /  (RTC_PRESCALE + 1) ) ) )/ BLINKS_PER_KWH;
 
     NVIC_ClearPendingIRQ(SAADC_IRQn);
     NVIC_EnableIRQ(SAADC_IRQn);
@@ -331,9 +347,10 @@ void hal_utility_state_machine(){
 #ifdef DBG_STATES
         nrf_gpio_pin_write(LED1,0);
 #endif
-		send_one_packet(37);
+
+        send_one_packet(37);
         send_one_packet(38);
-		send_one_packet(39);
+        send_one_packet(39);
 
 #ifdef DBG_STATES
         nrf_gpio_pin_write(LED1,1);
