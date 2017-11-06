@@ -1,8 +1,7 @@
-#!/usr/bin/perl
 ######################################################################
-##        Copyright (c) 2016 Carsten Wulff Software, Norway 
+##        Copyright (c) 2017 Carsten Wulff Software, Norway 
 ## ###################################################################
-## Created       : wulff at 2016-07-07
+## Created       : wulff at 2017-11-5
 ## ###################################################################
 ##  The MIT License (MIT)
 ## 
@@ -26,29 +25,33 @@
 ##  
 ######################################################################
 
+from bluepy.btle import Scanner, DefaultDelegate
+import time
 
-use strict;
-my $fh;
-open($fh, "> data/raw.dat") or die "Could not open raw.dat";
+dir = "/home/pi/data/utility/pilogs/"
 
-my $addr = (shift || 0x20000000);
-my $count = (shift || 8192);
-my $bytes = $count*2;
+def writeData(kw):
+    fname = time.strftime("%Y-%m-%d.dat")
+    fo = open(dir + "/" + fname,"a")
+    fo.write(" %s; %s\n" % (time.time(),kw) )
+    fo.close()
 
-my $jprog = "/usr/local/bin/nrfjprog";
+class ScanDelegate(DefaultDelegate):
+    def __init__(self):
+        DefaultDelegate.__init__(self)
+        
+    def handleDiscovery(self, dev, isNewDev, isNewData):
+        if(dev.addr == "f7:61:e7:01:a3:e2"):
+            for (adtype, desc, value) in dev.getScanData():
+                if(desc == "Manufacturer"):
+                    writeData(int(value[-4:],16))
 
-my @buffer = `$jprog -f nRF52 --memrd $addr --w 16 --n $bytes;`;
-system("$jprog -f nRF52 --run");
-my @data;
 
-foreach(@buffer){
-  my @line = split(/\s+/);
-  shift(@line);
-  foreach my $i (0..7){
-	my $hex = $line[$i];
-	my $dec = hex($hex);
-#	$dec -= 65536 if $dec >= 32768;
-	print $fh $dec."\n";
-  }
-}
-close($fh);
+            
+scanner = Scanner().withDelegate(ScanDelegate())
+#- Scanning for 1 second seems like a good choice. If it's longer than the advertizer interval, then it does not always call the discovery delegate
+while(1):
+    scanner.scan(1)
+
+
+
