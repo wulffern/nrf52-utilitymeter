@@ -52,6 +52,17 @@ if(last_blink_status ==1 && blink_status == 0){
 - Count blinks over 4 seconds, and calculate the kW
 - Transmit an advertizing packet with the kW result embedded in the payload.
 
+## How does it work?
+I'm using photo transistors in my setup. The idea in the phototransistor is that the incoming light goes into the base region of the NPN transistor, the light exites the atoms, and make the electrons able to move. You have to provide somewhere for the electrons to go, however, and you do that by connecting the collector to a positiv votlage, and the emitter to ground. Thus, the electrons can freely flow from emitter to collector.
+
+Just a sidenote: quite a while ago they discovered that there was this "current" of charge that flowed when you created a potential difference between two places (battery), and had a metal wire inbetween, but back then they did not know about electrons, thus, they thought the "current" flowed from positive to negative. This is "wrong", but everyone has agreed that current flows from positive to negative, and it's too late to change now. That's the current flows oposite of the electrons.
+
+So, the current goes from collector to emitter. The  principle of a NPN transistor is that if you send a current into the base, it will be able draw a much larger current from the collector. In other words, the light will modulate how much current flows from collector to emitter.
+
+In my setup I use two transistors, because the ambient light will make the same current flow in both the transistors. I "bias" (provide a votlage) with the pull-up resistors. This limits the current that can flow, and thus the voltage is able to change. 
+
+In the end, the blinking will pull more current on one side, and thus the voltage at the input of the SAADC will jump up an down. Note that the SAADC only looks at the difference between the two voltages. It does not care if both go up an down.
+
 ## Status
 :white_check_mark: Get low power sampling with SAADC working 
 
