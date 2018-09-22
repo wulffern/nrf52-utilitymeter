@@ -66,7 +66,7 @@
 #define RTC_COUNT_PER_SECOND (32768)    //RTC frequency
 #define TICKS_TO_AVERAGE     (2048)     //How many ticks to average
 
-#define BLINKS_PER_KWH       (10000)    //Setting on utility meter,
+#define BLINKS_PER_KWH       (2000)    //Setting on utility meter,
                                         //change to what yours say (blinks/kwh)
 
 enum sensor_state{

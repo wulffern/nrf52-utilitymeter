@@ -5,9 +5,13 @@ SDKPATH = ../nRF5_SDK_11/
 
 DEVICE = NRF52
 DEVICE_LC = $(shell echo $(DEVICE) | tr A-Z a-z)
-PROJECT_NAME := saadc
 xDK_TOP ?= ${SDKPATH}
 #------
+
+ifdef SERIAL
+USE_SERIAL = -s ${SERIAL}
+endif
+
 
 
 export OUTPUT_FILENAME
@@ -243,9 +247,6 @@ clean:
 cleanobj:
 	$(RM) $(BUILD_DIRECTORIES)/*.o
 
-ifdef ${SERIAL}
-USE_SERIAL = -s ${SERIAL}
-endif
 
 flash: nrf52832_xxaa_s132
 	@echo Flashing: $(OUTPUT_BINARY_DIRECTORY)/$<.hex

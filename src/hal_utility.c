@@ -53,7 +53,7 @@ uint16_t result2[DMA_COUNT] __attribute__((section (".mydata2")));
 uint8_t adv_pdu[36 + 3] =
 {
     0x42, 0x24, 0x00,
-    0xE2, 0xA3, 0x01, 0xE7, 0x61, 0xF7,
+    0xE1, 0xA3, 0x01, 0xE7, 0x61, 0xF7,
     15,    9,  'c', 'a' ,  'w',  'u',  ':',  ' ', 'w',   ':', ' ',     0,    0,  0,  0,  0,
     12, 0xff, 0xAB, 0xBC, 0xCD, 0xDE, 0xEF, 0xF0, 0x01, 0x02, 0x03, 0x04, 0xC3
 };
@@ -240,7 +240,7 @@ void hal_utility_saadc_init(){
         SAADC_CH_CONFIG_MODE_Diff << SAADC_CH_CONFIG_MODE_Pos |
         SAADC_CH_CONFIG_TACQ_5us << SAADC_CH_CONFIG_TACQ_Pos |
         SAADC_CH_CONFIG_REFSEL_Internal << SAADC_CH_CONFIG_REFSEL_Pos |
-        SAADC_CH_CONFIG_GAIN_Gain1_2 << SAADC_CH_CONFIG_GAIN_Pos |
+        SAADC_CH_CONFIG_GAIN_Gain2 << SAADC_CH_CONFIG_GAIN_Pos |
         SAADC_CH_CONFIG_RESP_Pullup << SAADC_CH_CONFIG_RESP_Pos |
         SAADC_CH_CONFIG_RESN_Pullup << SAADC_CH_CONFIG_RESN_Pos );
 
@@ -349,6 +349,15 @@ void hal_utility_state_machine(){
 #endif
 
         send_one_packet(37);
+        send_one_packet(38);
+        send_one_packet(39);
+		send_one_packet(37);
+        send_one_packet(38);
+        send_one_packet(39);
+		send_one_packet(37);
+        send_one_packet(38);
+        send_one_packet(39);
+		send_one_packet(37);
         send_one_packet(38);
         send_one_packet(39);
 
