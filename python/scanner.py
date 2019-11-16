@@ -14,7 +14,7 @@ class ScanDelegate(DefaultDelegate):
         DefaultDelegate.__init__(self)
         
     def handleDiscovery(self, dev, isNewDev, isNewData):
-        if(dev.addr == "f7:61:e7:01:a3:e2"):
+        if(dev.addr == "f7:61:e7:01:a3:e1"):
             for (adtype, desc, value) in dev.getScanData():
                 if(desc == "Manufacturer"):
                     writeData(int(value[-4:],16))
