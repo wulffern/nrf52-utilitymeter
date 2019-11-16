@@ -99,7 +99,9 @@ private message on devzone.nordicsemi.com
 
 ## Thanks to
 - Hans E. for help with the Solar Sensor Beacon Packet format
-- Håkon A., Jon Gunnar S. and the Nordic support team for answering questions.
+- Håkon A., Jon Gunnar S. and the Nordic support team for answering
+  questions.
+- Martin T. for suggestions on improved advertizer packet
 
 ## Disclamer
 This is not an official Nordic Semiconductor release, it's examples
